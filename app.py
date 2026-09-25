@@ -18,14 +18,40 @@ from analyzer import ResumeAnalyzer
 from models import init_db, save_analysis, get_recent_analyses, get_analysis_by_id
 from roles_data import JOB_ROLES
 
-app = Flask(__name__)
+import tempfile
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 app.secret_key = "skillorbit-resume-analyzer-secure-key"
-app.config["UPLOAD_FOLDER"] = os.path.join(os.path.dirname(os.path.abspath(__file__)), "static", "uploads")
+
+# Handle writable upload directory for Vercel/serverless environments
+if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+    app.config["UPLOAD_FOLDER"] = os.path.join(tempfile.gettempdir(), "uploads")
+else:
+    try:
+        local_upload = os.path.join(BASE_DIR, "static", "uploads")
+        os.makedirs(local_upload, exist_ok=True)
+        app.config["UPLOAD_FOLDER"] = local_upload
+    except (OSError, PermissionError):
+        app.config["UPLOAD_FOLDER"] = os.path.join(tempfile.gettempdir(), "uploads")
+
+try:
+    os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+except Exception:
+    pass
+
 app.config["MAX_CONTENT_LENGTH"] = 16 * 1024 * 1024  # 16 MB max
 ALLOWED_EXTENSIONS = {"pdf", "docx", "doc", "txt"}
 
-os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
-init_db()
+try:
+    init_db()
+except Exception as e:
+    print(f"Database init notice: {e}")
 
 parser = ResumeParser()
 analyzer = ResumeAnalyzer()

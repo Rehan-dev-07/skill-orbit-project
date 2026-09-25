@@ -9,9 +9,31 @@ import os
 from datetime import datetime
 from typing import List, Dict, Any, Optional
 
-DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "resumes.db")
+import tempfile
+
+def get_db_path() -> str:
+    """Returns a writable path for SQLite database (handles Vercel /tmp filesystem)."""
+    if os.environ.get("VERCEL") or os.environ.get("AWS_LAMBDA_FUNCTION_NAME"):
+        return os.path.join(tempfile.gettempdir(), "resumes.db")
+    
+    local_dir = os.path.dirname(os.path.abspath(__file__))
+    local_db = os.path.join(local_dir, "resumes.db")
+    
+    # Test if current directory is writable
+    try:
+        test_file = os.path.join(local_dir, ".write_test")
+        with open(test_file, "w") as f:
+            f.write("1")
+        os.remove(test_file)
+        return local_db
+    except (OSError, IOError, PermissionError):
+        return os.path.join(tempfile.gettempdir(), "resumes.db")
+
+DB_FILE = get_db_path()
 
 def get_db_connection():
+    # Ensure parent directory exists for temp db
+    os.makedirs(os.path.dirname(DB_FILE), exist_ok=True)
     conn = sqlite3.connect(DB_FILE)
     conn.row_factory = sqlite3.Row
     return conn
