@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Resume Scan History | Smart Resume Analyzer{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h2 class="text-white fw-bold mb-1">
+                <i class="fa-solid fa-clock-rotate-left text-primary me-2"></i>Analysis History
+            </h2>
+            <p class="text-secondary small mb-0">Records stored securely in the SQLite database</p>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-primary-gradient btn-sm">
+            <i class="fa-solid fa-plus me-1"></i> New Analysis
+        </a>
+    </div>
+
+    <div class="glass-card p-4">
+        {% if records %}
+            <div class="table-responsive">
+                <table class="table table-dark table-hover align-middle mb-0" style="background: transparent;">
+                    <thead>
+                        <tr class="text-secondary small text-uppercase">
+                            <th>Candidate</th>
+                            <th>Target Role</th>
+                            <th>Resume Score</th>
+                            <th>ATS Compatibility</th>
+                            <th>Word Count</th>
+                            <th>Timestamp</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in records %}
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-white">{{ row.candidate_name }}</div>
+                                    <div class="text-muted small">{{ row.email or row.file_name }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary bg-opacity-25 text-primary">
+                                        {{ row.target_role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold {% if row.resume_score >= 80 %}text-success{% elif row.resume_score >= 60 %}text-primary{% else %}text-warning{% endif %}">
+                                        {{ row.resume_score }} / 100
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress flex-grow-1" style="height: 6px; width: 80px; background: rgba(255,255,255,0.1);">
+                                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ row.ats_score }}%"></div>
+                                        </div>
+                                        <span class="text-white small fw-semibold">{{ row.ats_score }}%</span>
+                                    </div>
+                                </td>
+                                <td class="text-secondary small">{{ row.word_count }}</td>
+                                <td class="text-secondary small">{{ row.created_at }}</td>
+                                <td class="text-end">
+                                    <a href="{{ url_for('view_dashboard', analysis_id=row.id) }}" class="btn btn-outline-glass btn-sm me-1" title="View Dashboard">
+                                        <i class="fa-solid fa-gauge-high"></i>
+                                    </a>
+                                    <a href="{{ url_for('export_pdf', analysis_id=row.id) }}" class="btn btn-outline-glass btn-sm" title="Download PDF Report">
+                                        <i class="fa-solid fa-file-pdf text-danger"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fa-solid fa-box-open text-secondary fs-1 mb-3"></i>
+                <h5 class="text-white">No Resume Analyses Found</h5>
+                <p class="text-secondary small mb-3">Upload your first resume or test with a sample resume to see results here.</p>
+                <a href="{{ url_for('index') }}" class="btn btn-primary-gradient btn-sm">Get Started</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

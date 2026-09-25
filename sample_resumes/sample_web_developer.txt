@@ -1,0 +1,31 @@
+ROHAN MEHTA
+Mumbai, Maharashtra, India | +91 97654 32109 | rohan.mehta.dev@gmail.com
+LinkedIn: linkedin.com/in/rohanmehta-dev | GitHub: github.com/rohanmehta-dev
+
+SUMMARY
+Passionate Web Developer with hands-on expertise building responsive, high-performance web applications using React, TypeScript, JavaScript, HTML5, and CSS3. Focused on clean component architecture and web performance.
+
+TECHNICAL SKILLS
+- Frontend Core: HTML5, CSS3, JavaScript (ES6+), TypeScript, Responsive Design, DOM Manipulation
+- Frameworks & Libraries: React, Next.js, Tailwind CSS, Bootstrap, Redux Toolkit
+- Tools & APIs: REST API, Git, Webpack, Vite, Cross-Browser Testing, JSON
+
+PROJECTS
+- SaaS Project Collaboration Dashboard (React, TypeScript, Tailwind CSS)
+  Engineered modular Kanban board with drag-and-drop, WebSocket real-time updates, and responsive layouts across mobile and desktop.
+- E-Commerce Storefront with Headless CMS (Next.js, React, REST API)
+  Developed fast eCommerce storefront achieving 98/100 Google Lighthouse performance score and streamlined checkout experience.
+
+EXPERIENCE
+Frontend Developer Intern | PixelCraft Studios (January 2024 - July 2024)
+- Developed 15+ responsive marketing landing pages using HTML5, CSS3, and React.
+- Optimized bundle sizes and lazy-loaded assets, improving first contentful paint by 42%.
+- Collaborated in an agile team utilizing Git and CI/CD pull request reviews.
+
+EDUCATION
+Bachelor of Engineering (B.E.) in Information Technology
+Mumbai University | Graduated: 2024 | First Class with Distinction
+
+CERTIFICATIONS
+- Meta Front-End Developer Professional Certificate
+- freeCodeCamp Responsive Web Design Certification

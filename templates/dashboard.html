@@ -1,0 +1,387 @@
+{% extends "base.html" %}
+
+{% block title %}Analysis Dashboard | {{ result.parsed.candidate_name }} - {{ result.ats.role_name }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header Banner -->
+    <div class="glass-card p-4 mb-4">
+        <div class="row align-items-center gy-3">
+            <div class="col-lg-7">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-3 rounded-circle bg-primary bg-opacity-25 text-primary fs-3">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <h2 class="text-white fw-bold mb-0">{{ result.parsed.candidate_name }}</h2>
+                            <span class="badge bg-{{ result.scoring.badge_class }} badge-score">{{ result.scoring.rating }}</span>
+                        </div>
+                        <div class="d-flex flex-wrap align-items-center gap-3 mt-1 text-secondary small">
+                            {% if result.parsed.contact.email %}
+                                <span><i class="fa-regular fa-envelope me-1 text-primary"></i> {{ result.parsed.contact.email }}</span>
+                            {% endif %}
+                            {% if result.parsed.contact.phone %}
+                                <span><i class="fa-solid fa-phone me-1 text-success"></i> {{ result.parsed.contact.phone }}</span>
+                            {% endif %}
+                            {% if result.parsed.contact.linkedin %}
+                                <span><i class="fa-brands fa-linkedin me-1 text-info"></i> {{ result.parsed.contact.linkedin }}</span>
+                            {% endif %}
+                            {% if result.parsed.contact.github %}
+                                <span><i class="fa-brands fa-github me-1 text-white"></i> {{ result.parsed.contact.github }}</span>
+                            {% endif %}
+                            <span><i class="fa-regular fa-file-lines me-1"></i> {{ result.parsed.word_count }} words</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role Selector & Action Buttons -->
+            <div class="col-lg-5 text-lg-end">
+                <div class="d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
+                    <div class="input-group input-group-sm" style="max-width: 250px;">
+                        <span class="input-group-text bg-dark text-secondary border-secondary">
+                            <i class="fa-solid fa-crosshairs"></i>
+                        </span>
+                        <select class="form-select bg-dark text-white border-secondary" id="switchRoleSelect" data-analysis-id="{{ analysis_id }}">
+                            {% for role in roles %}
+                                <option value="{{ role }}" {% if role == result.ats.role_name %}selected{% endif %}>{{ role }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <a href="{{ url_for('export_pdf', analysis_id=analysis_id) }}" class="btn btn-outline-glass btn-sm">
+                        <i class="fa-solid fa-file-pdf text-danger me-1"></i> Export PDF Audit
+                    </a>
+                    <a href="{{ url_for('index') }}" class="btn btn-primary-gradient btn-sm">
+                        <i class="fa-solid fa-plus me-1"></i> New Scan
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Score Metrics Row -->
+    <div class="row g-4 mb-4">
+        <!-- Metric 1: Overall Resume Score -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card p-4 text-center h-100 d-flex flex-column justify-content-between">
+                <span class="text-secondary small fw-semibold text-uppercase">Resume Quality Score</span>
+                <div class="score-circle-container my-3">
+                    <canvas id="resumeScoreChart" width="160" height="160"></canvas>
+                    <div class="score-center-text">
+                        <span class="score-number text-white" id="displayResumeScore">{{ result.scoring.total_score }}</span>
+                        <span class="small text-secondary">/ 100</span>
+                    </div>
+                </div>
+                <div class="small text-secondary">
+                    Status: <strong class="text-{{ result.scoring.badge_class }}">{{ result.scoring.rating }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 2: ATS Keyword Match Score -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card p-4 text-center h-100 d-flex flex-column justify-content-between">
+                <span class="text-secondary small fw-semibold text-uppercase">ATS Compatibility Rate</span>
+                <div class="score-circle-container my-3">
+                    <canvas id="atsScoreChart" width="160" height="160"></canvas>
+                    <div class="score-center-text">
+                        <span class="score-number text-white" id="displayAtsScore">{{ result.ats.ats_score }}%</span>
+                        <div class="score-label" id="displayRoleName">{{ result.ats.role_name }}</div>
+                    </div>
+                </div>
+                <div class="small text-secondary">
+                    Matched: <strong class="text-white" id="displayMatchedCount">{{ result.ats.total_matched }}</strong> of {{ result.ats.total_required }} Skills
+                </div>
+            </div>
+        </div>
+
+        <!-- Metric 3: Section Completeness -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card p-4 h-100">
+                <span class="text-secondary small fw-semibold text-uppercase d-block mb-3">Sections Detected</span>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small">
+                    <li class="d-flex align-items-center justify-content-between">
+                        <span><i class="fa-solid fa-align-left me-2 text-secondary"></i>Summary / Objective</span>
+                        {% if result.parsed.sections.summary %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-xmark text-danger"></i>
+                        {% endif %}
+                    </li>
+                    <li class="d-flex align-items-center justify-content-between">
+                        <span><i class="fa-solid fa-code me-2 text-secondary"></i>Technical Skills</span>
+                        {% if result.parsed.sections.skills %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-xmark text-danger"></i>
+                        {% endif %}
+                    </li>
+                    <li class="d-flex align-items-center justify-content-between">
+                        <span><i class="fa-solid fa-briefcase me-2 text-secondary"></i>Work Experience</span>
+                        {% if result.parsed.sections.experience %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-xmark text-secondary"></i>
+                        {% endif %}
+                    </li>
+                    <li class="d-flex align-items-center justify-content-between">
+                        <span><i class="fa-solid fa-folder-tree me-2 text-secondary"></i>Projects Section</span>
+                        {% if result.parsed.sections.projects %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-xmark text-danger"></i>
+                        {% endif %}
+                    </li>
+                    <li class="d-flex align-items-center justify-content-between">
+                        <span><i class="fa-solid fa-graduation-cap me-2 text-secondary"></i>Education</span>
+                        {% if result.parsed.sections.education %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-xmark text-danger"></i>
+                        {% endif %}
+                    </li>
+                    <li class="d-flex align-items-center justify-content-between">
+                        <span><i class="fa-solid fa-award me-2 text-secondary"></i>Certifications</span>
+                        {% if result.parsed.sections.certifications %}
+                            <i class="fa-solid fa-circle-check text-success"></i>
+                        {% else %}
+                            <i class="fa-solid fa-circle-minus text-secondary"></i>
+                        {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Metric 4: Target Role Info -->
+        <div class="col-md-6 col-lg-3">
+            <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <span class="text-secondary small fw-semibold text-uppercase d-block mb-1">Target Role Profile</span>
+                    <h5 class="text-white fw-bold mb-1" id="roleTitleHeader">{{ result.ats.role_title }}</h5>
+                    <span class="badge bg-primary bg-opacity-25 text-primary mb-2" id="roleCategoryBadge">{{ result.ats.role_category }}</span>
+                    <p class="text-secondary small mb-0" id="roleDescText">{{ result.ats.role_description }}</p>
+                </div>
+                <div class="mt-3 pt-2 border-top border-secondary border-opacity-25">
+                    <button class="btn btn-outline-glass btn-sm w-100" data-bs-toggle="modal" data-bs-target="#textModal">
+                        <i class="fa-regular fa-file-lines me-1"></i> View Parsed Text
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Breakdown Row -->
+    <div class="row g-4 mb-4">
+        <!-- 6-Parameter Quality Breakdown Chart -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="text-white fw-bold mb-0">
+                        <i class="fa-solid fa-chart-simple text-primary me-2"></i>Parameter Score Breakdown
+                    </h5>
+                    <span class="text-secondary small">Max 100 Pts</span>
+                </div>
+                <div style="height: 260px;">
+                    <canvas id="breakdownBarChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- ATS Keyword Distribution Chart -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="text-white fw-bold mb-0">
+                        <i class="fa-solid fa-pie-chart text-info me-2"></i>ATS Keyword Distribution
+                    </h5>
+                    <span class="text-secondary small" id="atsKeywordsSummary">Core vs Secondary</span>
+                </div>
+                <div style="height: 260px;">
+                    <canvas id="skillsDonutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Skill Gap & Keyword Matrix Row -->
+    <div class="row g-4 mb-4">
+        <!-- Matched Skills -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="text-white fw-bold mb-2">
+                    <i class="fa-solid fa-circle-check text-success me-2"></i>Matched Skills & Keywords
+                </h5>
+                <p class="text-secondary small mb-3">These industry-standard keywords were successfully identified in your resume:</p>
+                
+                <div class="mb-3">
+                    <h6 class="text-secondary small fw-semibold text-uppercase">Core Domain Skills</h6>
+                    <div id="matchedCoreContainer" class="d-flex flex-wrap">
+                        {% for skill in result.ats.matched_core %}
+                            <span class="skill-tag matched"><i class="fa-solid fa-check"></i> {{ skill.title() }}</span>
+                        {% else %}
+                            <span class="text-muted small">No core skills matched yet.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="text-secondary small fw-semibold text-uppercase">Supporting / Secondary Skills</h6>
+                    <div id="matchedSecondaryContainer" class="d-flex flex-wrap">
+                        {% for skill in result.ats.matched_secondary %}
+                            <span class="skill-tag secondary"><i class="fa-solid fa-check"></i> {{ skill.title() }}</span>
+                        {% else %}
+                            <span class="text-muted small">No secondary skills matched.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Missing Skills Gap -->
+        <div class="col-lg-6">
+            <div class="glass-card p-4 h-100">
+                <h5 class="text-white fw-bold mb-2">
+                    <i class="fa-solid fa-triangle-exclamation text-danger me-2"></i>Missing Skills (Skill Gap)
+                </h5>
+                <p class="text-secondary small mb-3">Incorporate these missing competencies to elevate your ATS match percentage:</p>
+
+                <div class="mb-3">
+                    <h6 class="text-secondary small fw-semibold text-uppercase">Critical Core Skills (High ATS Impact)</h6>
+                    <div id="missingCoreContainer" class="d-flex flex-wrap">
+                        {% for skill in result.ats.missing_core %}
+                            <span class="skill-tag missing"><i class="fa-solid fa-plus"></i> {{ skill.title() }}</span>
+                        {% else %}
+                            <span class="text-success small fw-semibold"><i class="fa-solid fa-trophy me-1"></i> Amazing! All core skills matched!</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div>
+                    <h6 class="text-secondary small fw-semibold text-uppercase">Recommended Secondary Skills</h6>
+                    <div id="missingSecondaryContainer" class="d-flex flex-wrap">
+                        {% for skill in result.ats.missing_secondary %}
+                            <span class="skill-tag" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);">
+                                <i class="fa-solid fa-plus"></i> {{ skill.title() }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted small">No secondary gaps.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Feedback System & Actionable Suggestions -->
+    <div class="glass-card p-4 p-md-5 mb-4">
+        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+            <div>
+                <h4 class="text-white fw-bold mb-1">
+                    <i class="fa-solid fa-lightbulb text-warning me-2"></i>Module 4: Smart Improvement Feedback
+                </h4>
+                <p class="text-secondary small mb-0">Prioritized recommendations tailored for your target role and resume weaknesses</p>
+            </div>
+            <span class="badge bg-primary bg-opacity-25 text-primary px-3 py-2">
+                {{ result.feedback|length }} Action Items Generated
+            </span>
+        </div>
+
+        <div id="feedbackContainer">
+            {% for item in result.feedback %}
+                <div class="feedback-card priority-{{ item.priority }}">
+                    <div class="d-flex align-items-start justify-content-between gap-3">
+                        <div class="d-flex align-items-start gap-3">
+                            <div class="p-2 rounded-3 bg-dark text-{{ item.color }} mt-1">
+                                <i class="fa-solid {{ item.icon }}"></i>
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <h6 class="text-white fw-bold mb-0">{{ item.title }}</h6>
+                                    <span class="badge bg-{{ item.color }} bg-opacity-25 text-{{ item.color }} small" style="font-size: 0.7rem;">
+                                        {{ item.priority }} Priority
+                                    </span>
+                                </div>
+                                <p class="text-secondary small mb-0">{{ item.description }}</p>
+                            </div>
+                        </div>
+                        <span class="badge bg-secondary-subtle text-secondary small text-nowrap d-none d-md-inline-block">
+                            {{ item.category }}
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Recommended Industry Certifications & Action Verbs -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="glass-card p-4 h-100">
+                <h6 class="text-white fw-bold mb-2">
+                    <i class="fa-solid fa-certificate text-warning me-2"></i>Recommended Certifications
+                </h6>
+                <p class="text-secondary small mb-3">Credentials that provide high validation for this role:</p>
+                <ul class="list-unstyled mb-0 d-flex flex-column gap-2 small text-secondary" id="certList">
+                    {% for cert in result.ats.recommended_certifications %}
+                        <li class="d-flex align-items-center gap-2">
+                            <i class="fa-solid fa-medal text-warning"></i>
+                            <span class="text-white">{{ cert }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="glass-card p-4 h-100">
+                <h6 class="text-white fw-bold mb-2">
+                    <i class="fa-solid fa-bolt text-info me-2"></i>High-Impact Action Verbs
+                </h6>
+                <p class="text-secondary small mb-3">Begin your resume accomplishment bullet points with these verbs:</p>
+                <div class="d-flex flex-wrap gap-2" id="verbsContainer">
+                    {% for verb in result.ats.action_verbs %}
+                        <span class="badge bg-dark border border-secondary text-white py-2 px-3 fw-semibold">
+                            {{ verb.capitalize() }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Raw Parsed Resume Text -->
+<div class="modal fade" id="textModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content bg-dark text-white border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title"><i class="fa-solid fa-file-lines me-2"></i>Extracted Resume Plain Text</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <pre class="bg-black p-3 rounded text-secondary" style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; white-space: pre-wrap;">{{ result.parsed.text }}</pre>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-outline-glass btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Initialize Dashboard Data
+    window.dashboardData = {
+        resumeScore: {{ result.scoring.total_score }},
+        atsScore: {{ result.ats.ats_score }},
+        breakdown: {{ result.scoring.breakdown | tojson }},
+        matchedCoreCount: {{ result.ats.matched_core | length }},
+        matchedSecondaryCount: {{ result.ats.matched_secondary | length }},
+        missingCoreCount: {{ result.ats.missing_core | length }},
+        missingSecondaryCount: {{ result.ats.missing_secondary | length }}
+    };
+</script>
+{% endblock %}

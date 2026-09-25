@@ -1,0 +1,31 @@
+PRIYA VERMA
+New Delhi, India | +91 98123 45678 | priya.verma.data@gmail.com
+LinkedIn: linkedin.com/in/priyaverma-data | GitHub: github.com/priyaverma-data
+
+CAREER OBJECTIVE
+Detail-oriented Data Analyst skilled in SQL query optimization, Python data processing, Tableau dashboards, and Power BI visualization. Passionate about transforming raw transactional datasets into predictive commercial metrics.
+
+SKILLS & EXPERTISE
+- Data Analysis & BI: SQL, MySQL, PostgreSQL, Tableau, Power BI, Excel (Advanced, VBA), Data Cleaning
+- Programming & Stats: Python, Pandas, NumPy, Matplotlib, Seaborn, Statistical Analysis, Exploratory Data Analysis
+- Database & ETL: BigQuery, ETL Pipelines, Data Visualization, KPI Dashboards
+
+WORK EXPERIENCE
+Junior Business Analyst | FinTech Global Solutions (August 2023 - Present)
+- Analyzed 2M+ banking transactions using SQL and Python, discovering revenue leakage patterns that saved $120k annually.
+- Built 12+ real-time executive Power BI dashboards tracking monthly active users and retention KPI metrics.
+- Automated weekly ETL reporting workflows using Python scripts, cutting manual preparation hours by 80%.
+
+PROJECTS
+- E-Commerce Customer Segmentation & Lifetime Value Engine
+  Extracted 500k customer purchase records using SQL; performed RFM analysis with Pandas and visualized cluster segments in Tableau.
+- Healthcare Admissions & Operational Bottleneck Visualizer
+  Developed interactive Power BI dashboard analyzing 45k patient visits to optimize emergency department wait times.
+
+EDUCATION
+Bachelor of Science (B.Sc.) in Statistics and Computer Science
+University of Delhi | Year: 2023 | Grade: Distinction (85%)
+
+CERTIFICATIONS
+- Google Data Analytics Professional Certificate
+- Microsoft Certified: Power BI Data Analyst Associate
